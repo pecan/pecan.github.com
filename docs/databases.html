@@ -1,0 +1,258 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Working with Databases, Transactions, and ORM’s &mdash; Pecan v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Pecan v0.0.1 documentation" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="deployment.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="celery.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="deployment.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="celery.html" title="&lt;no title&gt;"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="working-with-databases-transactions-and-orm-s">
+<span id="databases"></span><h1>Working with Databases, Transactions, and ORM&#8217;s<a class="headerlink" href="#working-with-databases-transactions-and-orm-s" title="Permalink to this headline">¶</a></h1>
+<p>Out of the box, Pecan provides no opinionated support for working with databases,
+but it&#8217;s easy to hook into your ORM of choice with minimal effort.  This article
+details best practices for integrating the popular Python ORM, SQLAlchemy, into
+your Pecan project.</p>
+<div class="section" id="init-model-and-preparing-your-model">
+<h2><tt class="docutils literal"><span class="pre">init_model</span></tt> and Preparing Your Model<a class="headerlink" href="#init-model-and-preparing-your-model" title="Permalink to this headline">¶</a></h2>
+<p>Pecan&#8217;s default quickstart project includes an empty stub directory for implementing
+your model as you see fit:</p>
+<div class="highlight-python"><pre>.
+└── test_project
+    ├── app.py
+    ├── __init__.py
+    ├── controllers
+    ├── model
+    │   ├── __init__.py
+    └── templates</pre>
+</div>
+<p>By default, this module contains a special method, <tt class="docutils literal"><span class="pre">init_model</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">conf</span>
+
+<span class="k">def</span> <span class="nf">init_model</span><span class="p">():</span>
+    <span class="c"># Read and parse database bindings from pecan.conf</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>The purpose of this method is to determine bindings from your configuration file and create
+necessary engines, pools, etc... according to your ORM or database toolkit of choice.</p>
+<p>Additionally, your project&#8217;s <tt class="docutils literal"><span class="pre">model</span></tt> module can be used to define functions for common binding
+operations, such as starting transactions, committing or rolling back work, and clearing a Session.
+This is also the location in your project where object and relation definitions should be defined.
+Here&#8217;s what a sample Pecan configuration file with database bindings might look like:</p>
+<div class="highlight-python"><pre># Server Specific Configurations
+server = {
+    ...
+}
+
+# Pecan Application Configurations
+app = {
+    ...
+}
+
+# Bindings and options to pass to SQLAlchemy's ``create_engine``
+sqlalchemy = {
+    'url'           : 'mysql://root:@localhost/atrium?charset=utf8&amp;use_unicode=0',
+    'echo'          : False,
+    'echo_pool'     : False,
+    'pool_recycle'  : 3600,
+    'encoding'      : 'utf-8'
+}</pre>
+</div>
+<p>...and a basic model implementation that can be used to configure and bind using SQLAlchemy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span>                  <span class="kn">import</span> <span class="n">conf</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span>             <span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">MetaData</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span>         <span class="kn">import</span> <span class="n">scoped_session</span><span class="p">,</span> <span class="n">sessionmaker</span>
+
+<span class="n">Session</span> <span class="o">=</span> <span class="n">scoped_session</span><span class="p">(</span><span class="n">sessionmaker</span><span class="p">())</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_engine_from_config</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
+    <span class="n">configuration</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">configuration</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">init_model</span><span class="p">():</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">_engine_from_config</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">sqlalchemy</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">start</span><span class="p">():</span>
+    <span class="n">Session</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span>
+    <span class="n">metadata</span><span class="o">.</span><span class="n">bind</span> <span class="o">=</span> <span class="n">Session</span><span class="o">.</span><span class="n">bind</span>
+
+<span class="k">def</span> <span class="nf">commit</span><span class="p">():</span>
+    <span class="n">Session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">rollback</span><span class="p">():</span>
+    <span class="n">Session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">clear</span><span class="p">():</span>
+    <span class="n">Session</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="binding-within-the-application">
+<h2>Binding Within the Application<a class="headerlink" href="#binding-within-the-application" title="Permalink to this headline">¶</a></h2>
+<p>There are several approaches that can be taken to wrap your application&#8217;s requests with calls
+to appropriate model function calls.  One approach is WSGI middleware.  We also recommend
+Pecan <a class="reference internal" href="hooks.html#hooks"><em>Hooks</em></a>.  Pecan comes with <tt class="docutils literal"><span class="pre">TransactionHook</span></tt>, a hook which can
+be used to wrap requests in transactions for you.  To use it, simply include it in your
+project&#8217;s <tt class="docutils literal"><span class="pre">app.py</span></tt> file and pass it a set of functions related to database binding:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">conf</span><span class="p">,</span> <span class="n">make_app</span>
+<span class="kn">from</span> <span class="nn">pecan.hooks</span> <span class="kn">import</span> <span class="n">TransactionHook</span>
+<span class="kn">from</span> <span class="nn">test_project</span> <span class="kn">import</span> <span class="n">model</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">make_app</span><span class="p">(</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+    <span class="n">static_root</span>     <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">static_root</span><span class="p">,</span>
+    <span class="n">template_path</span>   <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">template_path</span><span class="p">,</span>
+    <span class="n">debug</span>           <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span>
+    <span class="n">hooks</span>           <span class="o">=</span> <span class="p">[</span>
+        <span class="n">TransactionHook</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">start_read_only</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">commit</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">rollback</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">clear</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For the above example, on HTTP POST, PUT, and DELETE requests, <tt class="docutils literal"><span class="pre">TransactionHook</span></tt> behaves in the
+following manner:</p>
+<ol class="arabic simple">
+<li>Before controller routing has been determined, <tt class="docutils literal"><span class="pre">model.start()</span></tt> is called.  This function should bind to the appropriate SQLAlchemy engine and start a transaction.</li>
+<li>Controller code is run and returns.</li>
+<li>If your controller or template rendering fails and raises an exception, <tt class="docutils literal"><span class="pre">model.rollback()</span></tt> is called and the original exception is re-raised.  This allows you to rollback your database transaction to avoid committing work when exceptions occur in your application code.</li>
+<li>If the controller returns successfully, <tt class="docutils literal"><span class="pre">model.commit()</span></tt> and <tt class="docutils literal"><span class="pre">model.clear()</span></tt> are called.</li>
+</ol>
+<p>On idempotent operations (like HTTP GET and HEAD requests), TransactionHook behaves in the following
+manner:</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">model.start_read_only()</span></tt> is called.  This function should bind to your SQLAlchemy engine.</li>
+<li>Controller code is run and returns.</li>
+<li>If the controller returns successfully, <tt class="docutils literal"><span class="pre">model.clear()</span></tt> is called.</li>
+</ol>
+</div>
+<div class="section" id="splitting-reads-and-writes">
+<h2>Splitting Reads and Writes<a class="headerlink" href="#splitting-reads-and-writes" title="Permalink to this headline">¶</a></h2>
+<p>Employing the strategy above with <tt class="docutils literal"><span class="pre">TransactionHook</span></tt> makes it very simple to split database
+reads and writes based upon HTTP methods (i.e., GET/HEAD requests are read-only and would potentially
+be routed to a read-only database slave, while POST/PUT/DELETE requests require writing, and
+would always bind to a master database with read/write privileges).  It&#8217;s also very easy to extend
+<tt class="docutils literal"><span class="pre">TransactionHook</span></tt> or write your own hook implementation for more refined control over where and
+when database bindings are called.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Working with Databases, Transactions, and ORM&#8217;s</a><ul>
+<li><a class="reference internal" href="#init-model-and-preparing-your-model"><tt class="docutils literal"><span class="pre">init_model</span></tt> and Preparing Your Model</a></li>
+<li><a class="reference internal" href="#binding-within-the-application">Binding Within the Application</a></li>
+<li><a class="reference internal" href="#splitting-reads-and-writes">Splitting Reads and Writes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="celery.html"
+                        title="previous chapter">&lt;no title&gt;</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="deployment.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/databases.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="deployment.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="celery.html" title="&lt;no title&gt;"
+             >previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Jonathan LaCour.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

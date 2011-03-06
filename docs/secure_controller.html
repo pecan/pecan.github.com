@@ -1,0 +1,210 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Security and Authentication &mdash; Pecan v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Pecan v0.0.1 documentation" href="index.html" />
+    <link rel="next" title="JSON Support" href="jsonify.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="rest.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="jsonify.html" title="JSON Support"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rest.html" title="&lt;no title&gt;"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="security-and-authentication">
+<span id="secure-controller"></span><h1>Security and Authentication<a class="headerlink" href="#security-and-authentication" title="Permalink to this headline">¶</a></h1>
+<p>Pecan provides no out-of-the-box support for authentication, but it does give you the
+necessary tools to handle authentication and authorization as you see fit.</p>
+<p>In Pecan, you can wrap entire controller subtrees <em>or</em> individual method calls with
+function calls to determine access and secure portions of your application.</p>
+<p>Pecan&#8217;s <tt class="docutils literal"><span class="pre">secure</span></tt> method secures a method or class depending on invocation.</p>
+<p>To decorate a method, use one argument:</p>
+<div class="highlight-python"><pre>@secure('&lt;check_permissions_method&gt;')</pre>
+</div>
+<p>To secure a class, invoke with two arguments:</p>
+<div class="highlight-python"><pre>secure(&lt;object instance&gt;, '&lt;check_permissions_method&gt;')</pre>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">secure</span>
+
+<span class="k">class</span> <span class="nc">HighlyClassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">user_is_admin</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="c">#</span>
+      <span class="c"># This controller is unlocked to everyone,</span>
+      <span class="c"># and will not run any security checks.</span>
+      <span class="c">#</span>
+      <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="nd">@secure</span><span class="p">(</span><span class="s">&#39;check_permissions&#39;</span><span class="p">)</span>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">topsecret</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#</span>
+        <span class="c"># This controller is top-secret, and should</span>
+        <span class="c"># only be reachable by administrators.</span>
+        <span class="c">#</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="n">highly_classified</span> <span class="o">=</span> <span class="n">secure</span><span class="p">(</span><span class="n">HighlyClassifiedController</span><span class="p">(),</span> <span class="s">&#39;check_permissions&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, the same functionality can also be accomplished by subclassing Pecan&#8217;s <tt class="docutils literal"><span class="pre">SecureController</span></tt> class.
+Implementations of <tt class="docutils literal"><span class="pre">SecureController</span></tt> should extend the <tt class="docutils literal"><span class="pre">check_permissions</span></tt> classmethod to return a <tt class="xref docutils literal"><span class="pre">True</span></tt>
+or <tt class="xref docutils literal"><span class="pre">False</span></tt> value (depending on whether or not the user has permissions to the controller branch):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">SecureController</span><span class="p">,</span> <span class="n">unlocked</span>
+
+<span class="k">class</span> <span class="nc">HighlyClassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="n">SecureController</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">user_is_admin</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="nd">@unlocked</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="c">#</span>
+      <span class="c"># This controller is unlocked to everyone,</span>
+      <span class="c"># and will not run any security checks.</span>
+      <span class="c">#</span>
+      <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">topsecret</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#</span>
+        <span class="c"># This controller is top-secret, and should</span>
+        <span class="c"># only be reachable by administrators.</span>
+        <span class="c">#</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="n">highly_classified</span> <span class="o">=</span> <span class="n">HighlyClassifiedController</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="writing-authentication-methods">
+<h2>Writing Authentication Methods<a class="headerlink" href="#writing-authentication-methods" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">check_permissions</span></tt> method should be used to determine user authentication and authorization.  The
+code you implement here could range from simple session assertions (the existing user is authenticated
+as an administrator) to connecting to an LDAP service.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Security and Authentication</a><ul>
+<li><a class="reference internal" href="#writing-authentication-methods">Writing Authentication Methods</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rest.html"
+                        title="previous chapter">&lt;no title&gt;</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="jsonify.html"
+                        title="next chapter">JSON Support</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/secure_controller.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="jsonify.html" title="JSON Support"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rest.html" title="&lt;no title&gt;"
+             >previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Jonathan LaCour.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

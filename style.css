@@ -1,0 +1,31 @@
+/* main styles */
+body {
+	font-family: "Helvetica Neue", sans-serif;
+	background: #f9f9f9;
+}
+
+/* header */
+header {
+  font-size: 36px;
+}
+header small {
+  display: block;
+  font-size: 12px;
+}
+
+/* navigation */
+nav {
+	font-size:14px;
+	margin-bottom:36px;
+}
+nav a {
+	color: #262626;
+	text-decoration:none;
+}
+nav a:hover {
+	text-decoration:underline;
+}
+nav li {
+	display:inline-block;
+	margin-right:24px;
+}

@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>JSON Support &mdash; Pecan v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Pecan v0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Hooks" href="hooks.html" />
+    <link rel="prev" title="Security and Authentication" href="secure_controller.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hooks.html" title="Hooks"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="secure_controller.html" title="Security and Authentication"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="json-support">
+<span id="jsonify"></span><h1>JSON Support<a class="headerlink" href="#json-support" title="Permalink to this headline">¶</a></h1>
+<p>Pecan includes a simple, easy-to-use system for generating and serving
+<tt class="docutils literal"><span class="pre">JSON</span></tt>. To get started, create a file in your project called
+<tt class="docutils literal"><span class="pre">json.py</span></tt> which should be imported in your <tt class="docutils literal"><span class="pre">app.py</span></tt>.</p>
+<p>Your <tt class="docutils literal"><span class="pre">json</span></tt> module will contain a series of rules for generating
+<tt class="docutils literal"><span class="pre">JSON</span></tt> from objects you return in your controller, utilizing
+&#8220;generic&#8221; function support from the
+<a class="reference external" href="http://pypi.python.org/pypi/simplegeneric">simplegeneric</a> library.</p>
+<p>Let us imagine that we have a controller in our Pecan application which
+we want to use to return <tt class="docutils literal"><span class="pre">JSON</span></tt> output for a <tt class="docutils literal"><span class="pre">User</span></tt> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">myproject.lib</span> <span class="kn">import</span> <span class="n">get_current_user</span>
+
+<span class="k">class</span> <span class="nc">UsersController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@expose</span><span class="p">(</span><span class="s">&#39;json&#39;</span><span class="p">)</span>
+    <span class="nd">@validate</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">current_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        return an instance of myproject.model.User which represents</span>
+<span class="sd">        the current authenticated user</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">get_current_user</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In order for this controller to function, Pecan will need to know how to
+convert the <tt class="docutils literal"><span class="pre">User</span></tt> object into a <tt class="docutils literal"><span class="pre">JSON</span></tt>-friendly data structure. One
+way to tell Pecan how to convert an object into <tt class="docutils literal"><span class="pre">JSON</span></tt> is to define a
+rule in your <tt class="docutils literal"><span class="pre">json.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan.jsonify</span> <span class="kn">import</span> <span class="n">jsonify</span>
+<span class="kn">from</span> <span class="nn">myproject</span> <span class="kn">import</span> <span class="n">model</span>
+
+<span class="nd">@jsonify.when_type</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">User</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">jsonify_user</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+        <span class="n">birthday</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">birthday</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, when an instance of the <tt class="docutils literal"><span class="pre">model.User</span></tt> class is
+returned from a controller which is configured to return <tt class="docutils literal"><span class="pre">JSON</span></tt>, the
+<tt class="docutils literal"><span class="pre">jsonify_user</span></tt> rule will be called to generate that <tt class="docutils literal"><span class="pre">JSON</span></tt>. Note
+that the rule does not generate a <tt class="docutils literal"><span class="pre">JSON</span></tt> string, but rather generates
+a Python dictionary which contains only <tt class="docutils literal"><span class="pre">JSON</span></tt> friendly data types.</p>
+<p>Alternatively, the rule can be specified on the object itself, by
+specifying a <tt class="docutils literal"><span class="pre">__json__</span></tt> method on the object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">birthday</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">birthday</span> <span class="o">=</span> <span class="n">birthday</span>
+
+    <span class="k">def</span> <span class="nf">__json__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+            <span class="n">birthday</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">birthday</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>The benefit of using a <tt class="docutils literal"><span class="pre">json.py</span></tt> module is having all of your <tt class="docutils literal"><span class="pre">JSON</span></tt>
+rules defined in a central location, but some projects prefer the
+simplicity of keeping the <tt class="docutils literal"><span class="pre">JSON</span></tt> rules attached directly to their
+model objects.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="secure_controller.html"
+                        title="previous chapter">Security and Authentication</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hooks.html"
+                        title="next chapter">Hooks</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/jsonify.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hooks.html" title="Hooks"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="secure_controller.html" title="Security and Authentication"
+             >previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Jonathan LaCour.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

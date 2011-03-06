@@ -1,0 +1,146 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pecan.secure – Pecan Secure Controllers &mdash; Pecan v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Pecan v0.0.1 documentation" href="index.html" />
+    <link rel="next" title="pecan.templating – Pecan Templating" href="pecan_templating.html" />
+    <link rel="prev" title="pecan.routing – Pecan Routing" href="pecan_routing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pecan_templating.html" title="pecan.templating – Pecan Templating"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pecan_routing.html" title="pecan.routing – Pecan Routing"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pecan-secure-pecan-secure-controllers">
+<span id="pecan-secure"></span><h1><a class="reference internal" href="#module-pecan.secure" title="pecan.secure"><tt class="xref py py-mod docutils literal"><span class="pre">pecan.secure</span></tt></a> &#8211; Pecan Secure Controllers<a class="headerlink" href="#pecan-secure-pecan-secure-controllers" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-pecan.secure" title="pecan.secure"><tt class="xref py py-mod docutils literal"><span class="pre">pecan.secure</span></tt></a> module includes a basic framework for building
+security into your applications.</p>
+<span class="target" id="module-pecan.secure"></span><dl class="function">
+<dt id="pecan.secure.unlocked">
+<tt class="descclassname">pecan.secure.</tt><tt class="descname">unlocked</tt><big>(</big><em>func_or_obj</em><big>)</big><a class="headerlink" href="#pecan.secure.unlocked" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method unlocks method or class attribute on a SecureController.  Can
+be used to decorate or wrap an attribute</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pecan.secure.secure">
+<tt class="descclassname">pecan.secure.</tt><tt class="descname">secure</tt><big>(</big><em>func_or_obj</em>, <em>check_permissions_for_obj=None</em><big>)</big><a class="headerlink" href="#pecan.secure.secure" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method secures a method or class depending on invocation.</p>
+<dl class="docutils">
+<dt>To decorate a method use one argument:</dt>
+<dd>&#64;secure(&lt;check_permissions_method&gt;)</dd>
+<dt>To secure a class, invoke with two arguments:</dt>
+<dd>secure(&lt;obj instance&gt;, &lt;check_permissions_method&gt;)</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pecan.secure.SecureController">
+<em class="property">class </em><tt class="descclassname">pecan.secure.</tt><tt class="descname">SecureController</tt><a class="headerlink" href="#pecan.secure.SecureController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Used to apply security to a controller. 
+Implementations of SecureController should extend the
+<cite>check_permissions</cite> method to return a True or False
+value (depending on whether or not the user has permissions
+to the controller).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pecan_routing.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">pecan.routing</span></tt> &#8211; Pecan Routing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pecan_templating.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">pecan.templating</span></tt> &#8211; Pecan Templating</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pecan_secure.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pecan_templating.html" title="pecan.templating – Pecan Templating"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pecan_routing.html" title="pecan.routing – Pecan Routing"
+             >previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Jonathan LaCour.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

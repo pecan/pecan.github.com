@@ -1,0 +1,345 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>App Engine Support &mdash; Pecan v0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Pecan v0.0.1 documentation" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="sessions.html" />
+    <link rel="prev" title="Unit Testing" href="testing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sessions.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Unit Testing"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="app-engine-support">
+<span id="app-engine"></span><h1>App Engine Support<a class="headerlink" href="#app-engine-support" title="Permalink to this headline">¶</a></h1>
+<p>Pecan runs smoothly in Google&#8217;s App Engine. There is <strong>no</strong> hacking/patching or weird
+changes that you need to make to work with Pecan. However, since App Engine has certain
+restrictions you may want to be aware on how to set it up correctly.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We do not discuss here how to get an App Engine environment here, nor App Engine
+specifics that are not related to Pecan. For more info on App Engine go to
+<a class="reference external" href="http://code.google.com/appengine/docs/whatisgoogleappengine.html">their docs</a></p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Pecan has a few dependencies and one of them is already supported by App Engine (WebOb)
+so no need to grab that. Just so you are aware, this is the list of things that you absolutely need
+to grab:</p>
+<blockquote>
+<div><ul class="simple">
+<li>WebCore       &gt;= 1.0.0</li>
+<li>simplegeneric &gt;= 0.7</li>
+<li>Paste         &gt;= 1.7.5.1</li>
+<li>PasteScript   &gt;= 1.7.3</li>
+<li>formencode    &gt;= 1.2.2</li>
+<li>WebTest       &gt;= 1.2.2</li>
+<li>WebError      &gt;= 0.10.3</li>
+</ul>
+</div></blockquote>
+<p>These are optional, depending on the templating engine you want to use. However, depending on your choice,
+you might want to check that engine&#8217;s dependencies as well.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Genshi &gt;= 0.6</li>
+<li>Kajiki &gt;= 0.3.1</li>
+<li>Mako &gt;= 0.3</li>
+</ul>
+</div></blockquote>
+<p>From this point forward, we will assume you are going to be using Mako (it is the recommended Pecan template
+engine), to avoid describing third party dependencies.</p>
+</div>
+<div class="section" id="creating-the-project">
+<h2>Creating the project<a class="headerlink" href="#creating-the-project" title="Permalink to this headline">¶</a></h2>
+<p>Create a directory called <tt class="docutils literal"><span class="pre">pecan_gae</span></tt> and <tt class="docutils literal"><span class="pre">cd</span></tt> into it so we can start adding files. We go step by
+step into what needs to go there to get everything running properly.</p>
+</div>
+<div class="section" id="app-yaml">
+<h2>app.yaml<a class="headerlink" href="#app-yaml" title="Permalink to this headline">¶</a></h2>
+<p>To start off, you will need your <tt class="docutils literal"><span class="pre">app.yaml</span></tt> file set properly to map to Pecan. This is how that file should look
+like:</p>
+<div class="highlight-python"><pre>application: foo-bar
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+
+- url: /.*
+  script: main.py</pre>
+</div>
+<p>Remember the application name will have to match your registered app name in App Engine. The file above maps
+everything to a <tt class="docutils literal"><span class="pre">main.py</span></tt> file that we will create next.</p>
+<p>This file will be the <em>root</em> of our project and will handle everything.</p>
+</div>
+<div class="section" id="main-py">
+<h2>main.py<a class="headerlink" href="#main-py" title="Permalink to this headline">¶</a></h2>
+<p>You can name this anything you want, but for consistency we are going with <cite>main.py</cite>. This file will handle
+all the incoming requests including static files for our Pecan application. This is how it should look:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">google.appengine.ext.webapp</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="s">&#39;./lib&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;./lib&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">Pecan</span><span class="p">,</span> <span class="n">expose</span>
+
+
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@expose</span><span class="p">(</span><span class="s">&#39;kajiki:index.html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Joe Wu Zap&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">Pecan</span><span class="p">(</span><span class="n">RootController</span><span class="p">(),</span> <span class="n">template_path</span><span class="o">=</span><span class="s">&#39;templates&#39;</span><span class="p">)</span>
+    <span class="n">util</span><span class="o">.</span><span class="n">run_wsgi_app</span><span class="p">(</span><span class="n">application</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We are doing a few things here... first we are importing the <tt class="docutils literal"><span class="pre">util</span></tt> module from App Engine that will
+run our Pecan app, then we are importing <tt class="docutils literal"><span class="pre">sys</span></tt> because we need to add <tt class="docutils literal"><span class="pre">lib</span></tt> to our path.</p>
+<p>The <tt class="docutils literal"><span class="pre">lib</span></tt> directory is where all our dependencies (including Pecan) will live, so we need to make sure
+App Engine will see that as well as all our libraries within <tt class="docutils literal"><span class="pre">lib</span></tt> (it would not be enough to add a
+<tt class="docutils literal"><span class="pre">__init__.py</span></tt> file there).</p>
+</div>
+<div class="section" id="lib">
+<h2>lib<a class="headerlink" href="#lib" title="Permalink to this headline">¶</a></h2>
+<p>Go ahead and create a <tt class="docutils literal"><span class="pre">lib</span></tt> directory inside of your <tt class="docutils literal"><span class="pre">pecan_gae</span></tt> directory
+application and add the requirements for Pecan there. Make sure you have
+a <tt class="docutils literal"><span class="pre">__init__.py</span></tt> file too.</p>
+<p>The <tt class="docutils literal"><span class="pre">lib</span></tt> directory should contain the source for all the dependencies we need. For our example, it should
+contain these libraries:</p>
+<blockquote>
+<div><ul class="simple">
+<li>alacarte</li>
+<li>formencode</li>
+<li>mako</li>
+<li>markupsafe</li>
+<li>Paste</li>
+<li>pecan</li>
+<li>pygments</li>
+<li>simplegeneric.py</li>
+<li>simplejson</li>
+<li>tempita</li>
+<li>WebCore</li>
+<li>WebTest</li>
+<li>WebError</li>
+</ul>
+</div></blockquote>
+<p>Unfortunately, <cite>weberror</cite> needs <cite>pkg_resources</cite> which it can&#8217;t find. The easy
+fix for this problem is to find <cite>pkg_resources</cite> in your own <cite>site-packages</cite>
+directory and copy it inside <cite>weberror</cite>.</p>
+<p>That is all you need to get this project started!</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When grabing the source of the dependencies we mention, make sure you are actually grabing the module itself
+and not adding the top directory source (where setup.py lives). Also make
+sure you are <strong>not</strong> using egg files (App Engine doesn&#8217;t work with them).</p>
+</div>
+</div>
+<div class="section" id="templates">
+<h2>templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>templates</cite> directory is where we will have all of our html templates for Pecan. If you don&#8217;t have it already, go ahead
+and create it and add this html file to it and name it index.html:</p>
+<div class="highlight-python"><pre>&lt;html&gt;
+
+&lt;head&gt;
+  &lt;title&gt;Hello, ${name}!&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+  &lt;h1&gt;Hello, ${name}!&lt;/h1&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;</pre>
+</div>
+</div>
+<div class="section" id="layout">
+<h2>Layout<a class="headerlink" href="#layout" title="Permalink to this headline">¶</a></h2>
+<p>This is how your layout (only showing directories) should look like:</p>
+<div class="highlight-python"><pre>pecan_gae
+├── lib
+│   ├── alacarte
+│   │   ├── serialize
+│   │   └── template
+│   ├── formencode
+│   │   ├── javascript
+│   │   └── util
+│   ├── mako
+│   │   └── ext
+│   ├── markupSafe
+│   ├── paste
+│   │   ├── auth
+│   │   ├── cowbell
+│   │   ├── debug
+│   │   ├── evalexception
+│   │   │   └── media
+│   │   ├── exceptions
+│   │   └── util
+│   ├── pecan
+│   │   ├── commands
+│   │   └── templates
+│   │       └── project
+│   │           ├── +package+
+│   │           │   ├── controllers
+│   │           │   ├── model
+│   │           │   └── templates
+│   │           └── public
+│   │               ├── css
+│   │               └── javascript
+│   ├── pygments
+│   │   ├── filters
+│   │   ├── formatters
+│   │   ├── lexers
+│   │   └── styles
+│   ├── simplejson
+│   │   └── tests
+│   ├── tempita
+│   ├── web
+│   │   ├── app
+│   │   ├── auth
+│   │   ├── commands
+│   │   ├── core
+│   │   │   └── dialects
+│   │   ├── db
+│   │   ├── extras
+│   │   └── utils
+│   ├── webTest
+│   └── weberror
+│       ├── eval-media
+│       ├── exceptions
+│       └── util
+└── templates</pre>
+</div>
+</div>
+<div class="section" id="trying-it-out">
+<h2>Trying it out<a class="headerlink" href="#trying-it-out" title="Permalink to this headline">¶</a></h2>
+<p>Now everything should be ready to start serving, so go ahead and run the development server:</p>
+<div class="highlight-python"><pre>$ ./dev_appserver.py pecan_gae
+INFO     2010-10-10 12:44:29,476 dev_appserver_main.py:431] Running application pecan-gae on port 8080: http://localhost:8080</pre>
+</div>
+<p>If you go to your browser and hit <tt class="docutils literal"><span class="pre">localhost:8080</span></tt> you should see something like this:</p>
+<div class="highlight-python"><pre>Hello, Joe Wu Zap!</pre>
+</div>
+<p>This is the most basic example for App Engine, you can start adding more controllers to handle a bigger
+application and connect everything together.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">App Engine Support</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#creating-the-project">Creating the project</a></li>
+<li><a class="reference internal" href="#app-yaml">app.yaml</a></li>
+<li><a class="reference internal" href="#main-py">main.py</a></li>
+<li><a class="reference internal" href="#lib">lib</a></li>
+<li><a class="reference internal" href="#templates">templates</a></li>
+<li><a class="reference internal" href="#layout">Layout</a></li>
+<li><a class="reference internal" href="#trying-it-out">Trying it out</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="testing.html"
+                        title="previous chapter">Unit Testing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sessions.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/app_engine.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sessions.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Unit Testing"
+             >previous</a> |</li>
+        <li><a href="index.html">Pecan v0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Jonathan LaCour.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
