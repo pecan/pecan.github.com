@@ -83,7 +83,7 @@ you might want to check that engine&#8217;s dependencies as well.</p>
 <div><ul class="simple">
 <li>Genshi &gt;= 0.6</li>
 <li>Kajiki &gt;= 0.3.1</li>
-<li>Mako &gt;= 0.3</li>
+<li>Mako   &gt;= 0.3</li>
 </ul>
 </div></blockquote>
 <p>From this point forward, we will assume you are going to be using Mako (it is the recommended Pecan template
@@ -151,6 +151,12 @@ App Engine will see that as well as all our libraries within <tt class="docutils
 <p>Go ahead and create a <tt class="docutils literal"><span class="pre">lib</span></tt> directory inside of your <tt class="docutils literal"><span class="pre">pecan_gae</span></tt> directory
 application and add the requirements for Pecan there. Make sure you have
 a <tt class="docutils literal"><span class="pre">__init__.py</span></tt> file too.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You should <strong>not</strong> run <tt class="docutils literal"><span class="pre">setup.py</span></tt> on any of the libraries. This prevents
+activating C extensions which are forbidden in App Engine. Copy the
+<em>actual</em> source for the libraries only.</p>
+</div>
 <p>The <tt class="docutils literal"><span class="pre">lib</span></tt> directory should contain the source for all the dependencies we need. For our example, it should
 contain these libraries:</p>
 <blockquote>

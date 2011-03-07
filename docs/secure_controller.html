@@ -69,6 +69,9 @@ function calls to determine access and secure portions of your application.</p>
 <span class="k">class</span> <span class="nc">HighlyClassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">pass</span>
 
+<span class="k">class</span> <span class="nc">UnclassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
 <span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="nd">@classmethod</span>
@@ -95,6 +98,7 @@ function calls to determine access and secure portions of your application.</p>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="n">highly_classified</span> <span class="o">=</span> <span class="n">secure</span><span class="p">(</span><span class="n">HighlyClassifiedController</span><span class="p">(),</span> <span class="s">&#39;check_permissions&#39;</span><span class="p">)</span>
+    <span class="n">unclassified</span> <span class="o">=</span> <span class="n">UnclassifiedController</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Alternatively, the same functionality can also be accomplished by subclassing Pecan&#8217;s <tt class="docutils literal"><span class="pre">SecureController</span></tt> class.
@@ -104,6 +108,9 @@ or <tt class="xref docutils literal"><span class="pre">False</span></tt> value (
 <span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">SecureController</span><span class="p">,</span> <span class="n">unlocked</span>
 
 <span class="k">class</span> <span class="nc">HighlyClassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">UnclassifiedController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">pass</span>
 
 <span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="n">SecureController</span><span class="p">):</span>
@@ -132,13 +139,116 @@ or <tt class="xref docutils literal"><span class="pre">False</span></tt> value (
         <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="n">highly_classified</span> <span class="o">=</span> <span class="n">HighlyClassifiedController</span><span class="p">()</span>
+    <span class="n">unclassified</span> <span class="o">=</span> <span class="n">unlocked</span><span class="p">(</span><span class="n">UnclassifiedController</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="section" id="writing-authentication-methods">
-<h2>Writing Authentication Methods<a class="headerlink" href="#writing-authentication-methods" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="writing-authentication-authorization-methods">
+<h2>Writing Authentication/Authorization Methods<a class="headerlink" href="#writing-authentication-authorization-methods" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">check_permissions</span></tt> method should be used to determine user authentication and authorization.  The
 code you implement here could range from simple session assertions (the existing user is authenticated
 as an administrator) to connecting to an LDAP service.</p>
+</div>
+<div class="section" id="more-on-secure">
+<h2>More on <tt class="docutils literal"><span class="pre">secure</span></tt><a class="headerlink" href="#more-on-secure" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">secure</span></tt> method has several advanced uses that allow you to create robust security policies for your application.</p>
+<p>First, you can pass via a string  the name of either a classmethod or an instance method of the controller to use as the <tt class="docutils literal"><span class="pre">check_permission</span></tt> method.  Instance methods are particularly useful if you wish to authorize access to attriubutes of a particular model instance.  Consider the following example of a basic virtual filesystem:</p>
+<div class="highlight-python"><pre>from pecan import expose
+from pecan.secure import secure
+
+from myapp.session import get_current_user
+from myapp.model import FileObject
+
+class FileController(object):
+    def __init__(self, name):
+        self.file_object = FileObject(name)
+
+    def read_access(self):
+        self.file_object.read_access(get_current_user())
+
+    def write_access(self):
+        self.file_object.write_access(get_current_user())
+
+    @secure('write_access')
+    @expose()
+    def upload_file(self):
+        pass
+
+    @secure('read_access')
+    @expose()
+    def download_file(self):
+        pass
+
+class RootController(object):
+    @expose()
+    def _lookup(self, name, *remainder):
+        return FileController(name), *remainder</pre>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">secure</span></tt> method also accepts a function instead of a string.  When passing a function,  make sure that the function is imported from another file or defined in the same file before the class definition &#8211; otherwise you will likely get error during module import.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">secure</span>
+
+<span class="kn">from</span> <span class="nn">myapp.auth</span> <span class="kn">import</span> <span class="n">user_authenitcated</span>
+
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@secure</span><span class="p">(</span><span class="n">user_authenticated</span><span class="p">)</span>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Logged in&#39;</span>
+</pre></div>
+</div>
+<p>You can also use the <tt class="docutils literal"><span class="pre">secure</span></tt> method to change the behavior of a SecureController.  Decorating a method or wrapping a subcontroller tells Pecan to use another security function other than the default controller method.  This is useful for situations where you want a different level or type of security.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">SecureController</span><span class="p">,</span> <span class="n">secure</span>
+
+<span class="kn">from</span> <span class="nn">myapp.auth</span> <span class="kn">import</span> <span class="n">user_authenticated</span><span class="p">,</span> <span class="n">api_autheniticated</span>
+
+<span class="k">class</span> <span class="nc">ApiController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="n">SecureController</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">user_authenticated</span><span class="p">()</span>
+
+    <span class="nd">@classmethid</span>
+    <span class="k">def</span> <span class="nf">check_api_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">admin_user</span><span class="p">()</span>
+
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;logged in user&#39;</span>
+
+    <span class="n">api</span> <span class="o">=</span> <span class="n">secure</span><span class="p">(</span><span class="n">ApiController</span><span class="p">(),</span> <span class="s">&#39;check_admin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the example above, pecan will <em>only</em> call <tt class="docutils literal"><span class="pre">check_api_permissions</span></tt> when a request is made for <tt class="docutils literal"><span class="pre">/api/</span></tt>.</p>
+</div>
+<div class="section" id="multiple-secure-controllers">
+<h2>Multiple Secure Controllers<a class="headerlink" href="#multiple-secure-controllers" title="Permalink to this headline">¶</a></h2>
+<p>Pecan allows you to have nested secure controllers. In the example below, when a request is made for <tt class="docutils literal"><span class="pre">/admin/index/</span></tt>, Pecan first calls <tt class="docutils literal"><span class="pre">check_permissions</span></tt> on the RootController and then calls <tt class="docutils literal"><span class="pre">check_permissions</span></tt> on the AdminController. The ability to nest <tt class="docutils literal"><span class="pre">SsecureController</span></tt> instances allows you to protect controllers with an increasing level of protection.</p>
+<div class="highlight-python"><pre>from pecan import expose
+from pecan.secure import SecureController, secure
+
+from myapp.auth import user_logged_in, is_admin
+
+class AdminController(SecureController):
+    @classmethod
+    def check_permissions(cls):
+        return is_admin()
+
+    @expose()
+    def index(self):
+        return 'admin dashboard'
+
+class RootController(SecureController():
+    @classmethod
+    def check_permissions(cls):
+        return user_logged_in
+
+    @expose()
+    def index(self):
+        return 'user dashboard'</pre>
+</div>
 </div>
 </div>
 
@@ -151,7 +261,9 @@ as an administrator) to connecting to an LDAP service.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Security and Authentication</a><ul>
-<li><a class="reference internal" href="#writing-authentication-methods">Writing Authentication Methods</a></li>
+<li><a class="reference internal" href="#writing-authentication-authorization-methods">Writing Authentication/Authorization Methods</a></li>
+<li><a class="reference internal" href="#more-on-secure">More on <tt class="docutils literal"><span class="pre">secure</span></tt></a></li>
+<li><a class="reference internal" href="#multiple-secure-controllers">Multiple Secure Controllers</a></li>
 </ul>
 </li>
 </ul>
