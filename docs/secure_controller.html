@@ -151,37 +151,40 @@ as an administrator) to connecting to an LDAP service.</p>
 <div class="section" id="more-on-secure">
 <h2>More on <tt class="docutils literal"><span class="pre">secure</span></tt><a class="headerlink" href="#more-on-secure" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">secure</span></tt> method has several advanced uses that allow you to create robust security policies for your application.</p>
-<p>First, you can pass via a string  the name of either a classmethod or an instance method of the controller to use as the <tt class="docutils literal"><span class="pre">check_permission</span></tt> method.  Instance methods are particularly useful if you wish to authorize access to attriubutes of a particular model instance.  Consider the following example of a basic virtual filesystem:</p>
-<div class="highlight-python"><pre>from pecan import expose
-from pecan.secure import secure
+<p>First, you can pass via a string the name of either a classmethod or an instance method of the controller to use as the
+<tt class="docutils literal"><span class="pre">check_permission</span></tt> method.  Instance methods are particularly useful if you wish to authorize access to attributes
+of a particular model instance.  Consider the following example of a basic virtual filesystem:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">secure</span>
 
-from myapp.session import get_current_user
-from myapp.model import FileObject
+<span class="kn">from</span> <span class="nn">myapp.session</span> <span class="kn">import</span> <span class="n">get_current_user</span>
+<span class="kn">from</span> <span class="nn">myapp.model</span> <span class="kn">import</span> <span class="n">FileObject</span>
 
-class FileController(object):
-    def __init__(self, name):
-        self.file_object = FileObject(name)
+<span class="k">class</span> <span class="nc">FileController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_object</span> <span class="o">=</span> <span class="n">FileObject</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-    def read_access(self):
-        self.file_object.read_access(get_current_user())
+    <span class="k">def</span> <span class="nf">read_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_object</span><span class="o">.</span><span class="n">read_access</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">())</span>
 
-    def write_access(self):
-        self.file_object.write_access(get_current_user())
+    <span class="k">def</span> <span class="nf">write_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_object</span><span class="o">.</span><span class="n">write_access</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">())</span>
 
-    @secure('write_access')
-    @expose()
-    def upload_file(self):
-        pass
+    <span class="nd">@secure</span><span class="p">(</span><span class="s">&#39;write_access&#39;</span><span class="p">)</span>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">upload_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
 
-    @secure('read_access')
-    @expose()
-    def download_file(self):
-        pass
+    <span class="nd">@secure</span><span class="p">(</span><span class="s">&#39;read_access&#39;</span><span class="p">)</span>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
 
-class RootController(object):
-    @expose()
-    def _lookup(self, name, *remainder):
-        return FileController(name), *remainder</pre>
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">remainder</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FileController</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">remainder</span>
+</pre></div>
 </div>
 <p>The <tt class="docutils literal"><span class="pre">secure</span></tt> method also accepts a function instead of a string.  When passing a function,  make sure that the function is imported from another file or defined in the same file before the class definition &#8211; otherwise you will likely get error during module import.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
@@ -200,7 +203,7 @@ class RootController(object):
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
 <span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">SecureController</span><span class="p">,</span> <span class="n">secure</span>
 
-<span class="kn">from</span> <span class="nn">myapp.auth</span> <span class="kn">import</span> <span class="n">user_authenticated</span><span class="p">,</span> <span class="n">api_autheniticated</span>
+<span class="kn">from</span> <span class="nn">myapp.auth</span> <span class="kn">import</span> <span class="n">user_authenticated</span><span class="p">,</span> <span class="n">admin_user</span>
 
 <span class="k">class</span> <span class="nc">ApiController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">pass</span>
@@ -210,7 +213,7 @@ class RootController(object):
     <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">user_authenticated</span><span class="p">()</span>
 
-    <span class="nd">@classmethid</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">check_api_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">admin_user</span><span class="p">()</span>
 
@@ -218,36 +221,37 @@ class RootController(object):
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s">&#39;logged in user&#39;</span>
 
-    <span class="n">api</span> <span class="o">=</span> <span class="n">secure</span><span class="p">(</span><span class="n">ApiController</span><span class="p">(),</span> <span class="s">&#39;check_admin&#39;</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">secure</span><span class="p">(</span><span class="n">ApiController</span><span class="p">(),</span> <span class="s">&#39;check_api_permissions&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the example above, pecan will <em>only</em> call <tt class="docutils literal"><span class="pre">check_api_permissions</span></tt> when a request is made for <tt class="docutils literal"><span class="pre">/api/</span></tt>.</p>
+<p>In the example above, pecan will <em>only</em> call <tt class="docutils literal"><span class="pre">admin_user</span></tt> when a request is made for <tt class="docutils literal"><span class="pre">/api/</span></tt>.</p>
 </div>
 <div class="section" id="multiple-secure-controllers">
 <h2>Multiple Secure Controllers<a class="headerlink" href="#multiple-secure-controllers" title="Permalink to this headline">¶</a></h2>
 <p>Pecan allows you to have nested secure controllers. In the example below, when a request is made for <tt class="docutils literal"><span class="pre">/admin/index/</span></tt>, Pecan first calls <tt class="docutils literal"><span class="pre">check_permissions</span></tt> on the RootController and then calls <tt class="docutils literal"><span class="pre">check_permissions</span></tt> on the AdminController. The ability to nest <tt class="docutils literal"><span class="pre">SsecureController</span></tt> instances allows you to protect controllers with an increasing level of protection.</p>
-<div class="highlight-python"><pre>from pecan import expose
-from pecan.secure import SecureController, secure
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
+<span class="kn">from</span> <span class="nn">pecan.secure</span> <span class="kn">import</span> <span class="n">SecureController</span>
 
-from myapp.auth import user_logged_in, is_admin
+<span class="kn">from</span> <span class="nn">myapp.auth</span> <span class="kn">import</span> <span class="n">user_logged_in</span><span class="p">,</span> <span class="n">is_admin</span>
 
-class AdminController(SecureController):
-    @classmethod
-    def check_permissions(cls):
-        return is_admin()
+<span class="k">class</span> <span class="nc">AdminController</span><span class="p">(</span><span class="n">SecureController</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">is_admin</span><span class="p">()</span>
 
-    @expose()
-    def index(self):
-        return 'admin dashboard'
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;admin dashboard&#39;</span>
 
-class RootController(SecureController():
-    @classmethod
-    def check_permissions(cls):
-        return user_logged_in
+<span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="n">SecureController</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_permissions</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">user_logged_in</span>
 
-    @expose()
-    def index(self):
-        return 'user dashboard'</pre>
+    <span class="nd">@expose</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;user dashboard&#39;</span>
+</pre></div>
 </div>
 </div>
 </div>
