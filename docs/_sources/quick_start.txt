@@ -3,26 +3,30 @@
 Quick Start
 ===========
 
-.. warning::
-    This section is out of date. Please do not refer to it directly.
-
 Here we will cover the basics for a small project in Pecan. More advanced
 examples and methods are not covered here.
 
 .. note::
     We will not cover how to get Pecan installed here. If you need installation
-    details please go to :ref:`installation`
+    details please go to :ref:`installation` which includes the recommended way
+    of setting up a proper development environment.
 
+
+Base Application Template
+-------------------------
 
 We include a basic template to have a good layout for a Pecan project. This is
-accomplished by ``PasteScript`` so we need to invoke a command to create our
-example project::
+accomplished by  the ``pecan`` command line script bundled with the framework. 
+Invoking the command to create a project is trivial::
 
     $ pecan create -t base
 
 The above command will prompt you for a project name. I chose *test_project*,
 but you can also provided as an argument at the end of the example command
-above.
+above, like::
+
+    $ pecan create -t base test_project
+
 This is how it looks like when we run the whole command:: 
 
     $ pecan create -t base
@@ -64,28 +68,45 @@ This is how it looks like when we run the whole command::
 
 This is how the structure of your new project should look like::
 
-    .
+    ├── MANIFEST.in
     ├── config.py
     ├── public
     │   ├── css
     │   │   └── style.css
     │   └── javascript
     │       └── shared.js
+    ├── setup.py
     ├── start.py
-    └── test_project
-        ├── __init__.py
-        ├── controllers
-        │   ├── __init__.py
-        │   └── root.py
-        ├── model
-        │   ├── __init__.py
-        └── templates
-            ├── index.html
-            ├── layout.html
-            └── success.html
+    ├── test_project
+    │   ├── __init__.py
+    │   ├── app.py
+    │   ├── controllers
+    │   │   ├── __init__.py
+    │   │   └── root.py
+    │   ├── model
+    │   │   └── __init__.py
+    │   ├── templates
+    │   │   ├── error.html
+    │   │   ├── index.html
+    │   │   ├── layout.html
+    │   │   └── success.html
+    │   └── tests
+    │       ├── __init__.py
+    │       ├── test_config.py
+    │       └── test_root.py
+    └── test_project.egg-info
+        ├── PKG-INFO
+        ├── SOURCES.txt
+        ├── dependency_links.txt
+        ├── not-zip-safe
+        ├── paster_plugins.txt
+        ├── requires.txt
+        └── top_level.txt
 
-    7 directories, 11 files
+    9 directories, 25 files
 
+The amount of files and directories may vary from time to time, but the above
+structure should give you an idea of what you should expect.
 
 A few things have been set for you, let's review them one by one:
 
@@ -94,36 +115,56 @@ A few things have been set for you, let's review them one by one:
   to get them here as well.
 
 
-Inside the project name you chose you have a couple of directories, and for the
+Inside the project name you chose you have a few directories, and for the
 most part, it will contain your models, controllers and templates:
 
-*  **controllers**: The container directory for your controller files. 
-*  **templates**: All your templates would go in here. 
+*  **controllers**:  The container directory for your controller files.
+*  **templates**:    All your templates would go in here.
+*  **model**:        Container for your model files.
+*  **tests**:        All your application test files.
 
 To avoid unneeded dependencies and to remain as flexible as possible, Pecan doesn't impose any database or
-ORM out of the box. You may notice that **model/__init__.py** is mostly empty. Its contents generally contain any code necessary define tables, ORM definitions, and parse bindings from ``pecan.conf``.
+ORM (Object Relational Mapper) out of the box. You may notice that **model/__init__.py** is mostly empty. 
+Its contents generally contain any code necessary to define tables, ORM definitions, and parse bindings from 
+your configuration file.
+
+
+.. note::
+    With your base project you also got some ready-to-run tests. Try running
+    ``py.test`` (the recommended test runner for Pecan) and see them passing!
 
 
 .. _running_application:
 
 Running the application
 -----------------------
-There are 2 files that are important to start your application. In this case
-``start.py`` and ``config.py`` are in charge of getting everything up and running.
+The most important file to run your application is your configuration file, the
+base project template should have created one for you already and it should be
+named ``config.py``.
 
-If you just run ``start.py`` with Python, passing ``config`` as an argument for
+This file already contains the necessary information to run a Pecan app, like
+ports, static paths and so forth. 
+
+If you just run ``pecan serve`` passing ``config.py`` as an argument for
 configuration it will bring up the development server and serve the app::
 
-    python start.py config
-    Serving on http://0.0.0.0:8080
+    $ pecan serve config.py 
+    Starting subprocess with file monitor
+    Starting server in PID 000.
     serving on 0.0.0.0:8080 view at http://127.0.0.1:8080
+
     
 To get up and running in no time the template helps a lot! 
 
 .. note::
     If you fail to pass an argument you will get a small error message asking
-    for a configuration file. Remember you need to pass the name of the
-    configuration file without the ".py" extension. 
+    for a configuration file. 
+
+The location for the config file and the argument itself are very flexible. You
+can pass an absolute path or just the name of the file without an extension,
+like::
+
+    $ pecan serve config
 
 
 Simple Configuration
@@ -137,6 +178,7 @@ This is how your default configuration file should look like::
 
     from test_project.controllers.root import RootController
 
+    import test_project
 
     # Server Specific Configurations
     server = {
@@ -147,9 +189,15 @@ This is how your default configuration file should look like::
     # Pecan Application Configurations
     app = {
         'root' : RootController(),
+        'modules' : [test_project],
         'static_root' : 'public', 
         'template_path' : 'test_project/templates',
-        'debug' : True 
+        'reload': True,
+        'debug' : True,
+        'errors' : {
+            '404' : '/error/404',
+            '__force_dict__' : True
+        }
     }
 
     # Custom Configurations must be in Python dictionary format::
@@ -158,6 +206,11 @@ This is how your default configuration file should look like::
     # 
     # All configurations are accessible at::
     # pecan.conf
+
+
+.. note::
+    If you named your project something other than *test_project* 
+    you should see that same name above instead.
 
 
 **Nothing** in the configuration file above is actually required for Pecan to
@@ -180,6 +233,7 @@ This is how it looks from the project template::
 
     from pecan import expose, request
     from formencode import Schema, validators as v
+    from webob.exc import status_map
 
 
     class SampleForm(Schema):
@@ -190,11 +244,21 @@ This is how it looks from the project template::
     class RootController(object):
         @expose('index.html')
         def index(self, name='', age=''):
-            return dict(errors=request.validation_error, name=name, age=age)
+            return dict(errors=request.validation_errors, name=name, age=age)
         
         @expose('success.html', schema=SampleForm(), error_handler='index')
         def handle_form(self, name, age):
             return dict(name=name, age=age)
+        
+        @expose('error.html')
+        def error(self, status):
+            try:
+                status = int(status)
+            except ValueError:
+                status = 0
+            message = getattr(status_map.get(status), 'explanation', '')
+            return dict(status=status, message=message)
+
 
 
 Here you can specify other classes if you need to do so later on your project,
@@ -202,13 +266,30 @@ but for now we have an *index* method and a *handle_form* one.
 
 **index**: Is *exposed* via the decorator ``@expose`` (that in turn uses the
 ``index.html`` file) as the root of the application, so anything that hits
-'/' will touch this method.
+the root of you application will touch this method.
+
+What your index method returns is a dictionary that is received by the template
+engine and translated into valid HTML.
+
 Since we are doing some validation and want to pass any errors we might get to
 the template, we set ``errors`` to receive anything that
-``request.validation_error`` returns.
-What your index method returns is dictionary that is received by the template
-engine.
+``request.validation_errors`` returns.
 
 
-**handle_form**: It receives 2 parameters (*name* and *age*) that are validated
+**handle_form**: It receives 2 arguments (*name* and *age*) that are validated
 through the *SampleForm* schema class.
+
+The ``error_handler`` has been set to index, this means that when errors are raised 
+they will be sent to the index controller so it returns them to the template.
+
+**error**: Finally, we have the error controller that allows you application to 
+custom display any possible errors that you might want to display. 
+
+Application Interaction
+-----------------------
+If you still have your application running and you visit your browser, you should
+see a nice page with some information about Pecan and a form so you can play a bit 
+with.
+
+This is very basic but it will give you the grounds necessary to build your application
+and understand some of the features the framework packs.

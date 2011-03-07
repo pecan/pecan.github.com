@@ -52,26 +52,27 @@
             
   <div class="section" id="quick-start">
 <span id="id1"></span><h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">This section is out of date. Please do not refer to it directly.</p>
-</div>
 <p>Here we will cover the basics for a small project in Pecan. More advanced
 examples and methods are not covered here.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">We will not cover how to get Pecan installed here. If you need installation
-details please go to <a class="reference internal" href="installation.html#installation"><em>Installation</em></a></p>
+details please go to <a class="reference internal" href="installation.html#installation"><em>Installation</em></a> which includes the recommended way
+of setting up a proper development environment.</p>
 </div>
+<div class="section" id="base-application-template">
+<h2>Base Application Template<a class="headerlink" href="#base-application-template" title="Permalink to this headline">¶</a></h2>
 <p>We include a basic template to have a good layout for a Pecan project. This is
-accomplished by <tt class="docutils literal"><span class="pre">PasteScript</span></tt> so we need to invoke a command to create our
-example project:</p>
+accomplished by  the <tt class="docutils literal"><span class="pre">pecan</span></tt> command line script bundled with the framework.
+Invoking the command to create a project is trivial:</p>
 <div class="highlight-python"><pre>$ pecan create -t base</pre>
 </div>
 <p>The above command will prompt you for a project name. I chose <em>test_project</em>,
 but you can also provided as an argument at the end of the example command
-above.
-This is how it looks like when we run the whole command:</p>
+above, like:</p>
+<div class="highlight-python"><pre>$ pecan create -t base test_project</pre>
+</div>
+<p>This is how it looks like when we run the whole command:</p>
 <div class="highlight-python"><pre>$ pecan create -t base
 Selected and implied templates:
   pecan#pecan-base  Template for creating a basic Framework package
@@ -109,28 +110,45 @@ Creating directory ./test_project
   Copying start.py_tmpl to ./test_project/start.py</pre>
 </div>
 <p>This is how the structure of your new project should look like:</p>
-<div class="highlight-python"><pre>.
+<div class="highlight-python"><pre>├── MANIFEST.in
 ├── config.py
 ├── public
 │   ├── css
 │   │   └── style.css
 │   └── javascript
 │       └── shared.js
+├── setup.py
 ├── start.py
-└── test_project
-    ├── __init__.py
-    ├── controllers
-    │   ├── __init__.py
-    │   └── root.py
-    ├── model
-    │   ├── __init__.py
-    └── templates
-        ├── index.html
-        ├── layout.html
-        └── success.html
+├── test_project
+│   ├── __init__.py
+│   ├── app.py
+│   ├── controllers
+│   │   ├── __init__.py
+│   │   └── root.py
+│   ├── model
+│   │   └── __init__.py
+│   ├── templates
+│   │   ├── error.html
+│   │   ├── index.html
+│   │   ├── layout.html
+│   │   └── success.html
+│   └── tests
+│       ├── __init__.py
+│       ├── test_config.py
+│       └── test_root.py
+└── test_project.egg-info
+    ├── PKG-INFO
+    ├── SOURCES.txt
+    ├── dependency_links.txt
+    ├── not-zip-safe
+    ├── paster_plugins.txt
+    ├── requires.txt
+    └── top_level.txt
 
-7 directories, 11 files</pre>
+9 directories, 25 files</pre>
 </div>
+<p>The amount of files and directories may vary from time to time, but the above
+structure should give you an idea of what you should expect.</p>
 <p>A few things have been set for you, let&#8217;s review them one by one:</p>
 <ul class="simple">
 <li><strong>public</strong>: All your public static files like CSS and Javascript are placed</li>
@@ -138,30 +156,48 @@ Creating directory ./test_project
 <blockquote>
 <div>here. If you have some images (this example app doesn&#8217;t) it would make sense
 to get them here as well.</div></blockquote>
-<p>Inside the project name you chose you have a couple of directories, and for the
+<p>Inside the project name you chose you have a few directories, and for the
 most part, it will contain your models, controllers and templates:</p>
 <ul class="simple">
-<li><strong>controllers</strong>: The container directory for your controller files.</li>
-<li><strong>templates</strong>: All your templates would go in here.</li>
+<li><strong>controllers</strong>:  The container directory for your controller files.</li>
+<li><strong>templates</strong>:    All your templates would go in here.</li>
+<li><strong>model</strong>:        Container for your model files.</li>
+<li><strong>tests</strong>:        All your application test files.</li>
 </ul>
 <p>To avoid unneeded dependencies and to remain as flexible as possible, Pecan doesn&#8217;t impose any database or
-ORM out of the box. You may notice that <strong>model/__init__.py</strong> is mostly empty. Its contents generally contain any code necessary define tables, ORM definitions, and parse bindings from <tt class="docutils literal"><span class="pre">pecan.conf</span></tt>.</p>
+ORM (Object Relational Mapper) out of the box. You may notice that <strong>model/__init__.py</strong> is mostly empty.
+Its contents generally contain any code necessary to define tables, ORM definitions, and parse bindings from
+your configuration file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">With your base project you also got some ready-to-run tests. Try running
+<tt class="docutils literal"><span class="pre">py.test</span></tt> (the recommended test runner for Pecan) and see them passing!</p>
+</div>
+</div>
 <div class="section" id="running-the-application">
 <span id="running-application"></span><h2>Running the application<a class="headerlink" href="#running-the-application" title="Permalink to this headline">¶</a></h2>
-<p>There are 2 files that are important to start your application. In this case
-<tt class="docutils literal"><span class="pre">start.py</span></tt> and <tt class="docutils literal"><span class="pre">config.py</span></tt> are in charge of getting everything up and running.</p>
-<p>If you just run <tt class="docutils literal"><span class="pre">start.py</span></tt> with Python, passing <tt class="docutils literal"><span class="pre">config</span></tt> as an argument for
+<p>The most important file to run your application is your configuration file, the
+base project template should have created one for you already and it should be
+named <tt class="docutils literal"><span class="pre">config.py</span></tt>.</p>
+<p>This file already contains the necessary information to run a Pecan app, like
+ports, static paths and so forth.</p>
+<p>If you just run <tt class="docutils literal"><span class="pre">pecan</span> <span class="pre">serve</span></tt> passing <tt class="docutils literal"><span class="pre">config.py</span></tt> as an argument for
 configuration it will bring up the development server and serve the app:</p>
-<div class="highlight-python"><pre>python start.py config
-Serving on http://0.0.0.0:8080
+<div class="highlight-python"><pre>$ pecan serve config.py
+Starting subprocess with file monitor
+Starting server in PID 000.
 serving on 0.0.0.0:8080 view at http://127.0.0.1:8080</pre>
 </div>
 <p>To get up and running in no time the template helps a lot!</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you fail to pass an argument you will get a small error message asking
-for a configuration file. Remember you need to pass the name of the
-configuration file without the &#8221;.py&#8221; extension.</p>
+for a configuration file.</p>
+</div>
+<p>The location for the config file and the argument itself are very flexible. You
+can pass an absolute path or just the name of the file without an extension,
+like:</p>
+<div class="highlight-python"><pre>$ pecan serve config</pre>
 </div>
 </div>
 <div class="section" id="simple-configuration">
@@ -173,6 +209,7 @@ including possible custom configurations are set as Python dictionaries.</p>
 <p>This is how your default configuration file should look like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">test_project.controllers.root</span> <span class="kn">import</span> <span class="n">RootController</span>
 
+<span class="kn">import</span> <span class="nn">test_project</span>
 
 <span class="c"># Server Specific Configurations</span>
 <span class="n">server</span> <span class="o">=</span> <span class="p">{</span>
@@ -183,9 +220,15 @@ including possible custom configurations are set as Python dictionaries.</p>
 <span class="c"># Pecan Application Configurations</span>
 <span class="n">app</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">&#39;root&#39;</span> <span class="p">:</span> <span class="n">RootController</span><span class="p">(),</span>
+    <span class="s">&#39;modules&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="n">test_project</span><span class="p">],</span>
     <span class="s">&#39;static_root&#39;</span> <span class="p">:</span> <span class="s">&#39;public&#39;</span><span class="p">,</span>
     <span class="s">&#39;template_path&#39;</span> <span class="p">:</span> <span class="s">&#39;test_project/templates&#39;</span><span class="p">,</span>
-    <span class="s">&#39;debug&#39;</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="s">&#39;reload&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s">&#39;debug&#39;</span> <span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s">&#39;errors&#39;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;404&#39;</span> <span class="p">:</span> <span class="s">&#39;/error/404&#39;</span><span class="p">,</span>
+        <span class="s">&#39;__force_dict__&#39;</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="c"># Custom Configurations must be in Python dictionary format::</span>
@@ -195,6 +238,11 @@ including possible custom configurations are set as Python dictionaries.</p>
 <span class="c"># All configurations are accessible at::</span>
 <span class="c"># pecan.conf</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you named your project something other than <em>test_project</em>
+you should see that same name above instead.</p>
 </div>
 <p><strong>Nothing</strong> in the configuration file above is actually required for Pecan to
 be able to run. If you fail to provide some values Pecan will fill in the
@@ -211,6 +259,7 @@ the framework.</p>
 <p>This is how it looks from the project template:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span><span class="p">,</span> <span class="n">request</span>
 <span class="kn">from</span> <span class="nn">formencode</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">validators</span> <span class="k">as</span> <span class="n">v</span>
+<span class="kn">from</span> <span class="nn">webob.exc</span> <span class="kn">import</span> <span class="n">status_map</span>
 
 
 <span class="k">class</span> <span class="nc">SampleForm</span><span class="p">(</span><span class="n">Schema</span><span class="p">):</span>
@@ -221,25 +270,46 @@ the framework.</p>
 <span class="k">class</span> <span class="nc">RootController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="nd">@expose</span><span class="p">(</span><span class="s">&#39;index.html&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">validation_error</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">validation_errors</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
 
     <span class="nd">@expose</span><span class="p">(</span><span class="s">&#39;success.html&#39;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">SampleForm</span><span class="p">(),</span> <span class="n">error_handler</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">handle_form</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
+
+    <span class="nd">@expose</span><span class="p">(</span><span class="s">&#39;error.html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">status_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">status</span><span class="p">),</span> <span class="s">&#39;explanation&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here you can specify other classes if you need to do so later on your project,
 but for now we have an <em>index</em> method and a <em>handle_form</em> one.</p>
 <p><strong>index</strong>: Is <em>exposed</em> via the decorator <tt class="docutils literal"><span class="pre">&#64;expose</span></tt> (that in turn uses the
 <tt class="docutils literal"><span class="pre">index.html</span></tt> file) as the root of the application, so anything that hits
-&#8216;/&#8217; will touch this method.
-Since we are doing some validation and want to pass any errors we might get to
+the root of you application will touch this method.</p>
+<p>What your index method returns is a dictionary that is received by the template
+engine and translated into valid HTML.</p>
+<p>Since we are doing some validation and want to pass any errors we might get to
 the template, we set <tt class="docutils literal"><span class="pre">errors</span></tt> to receive anything that
-<tt class="docutils literal"><span class="pre">request.validation_error</span></tt> returns.
-What your index method returns is dictionary that is received by the template
-engine.</p>
-<p><strong>handle_form</strong>: It receives 2 parameters (<em>name</em> and <em>age</em>) that are validated
+<tt class="docutils literal"><span class="pre">request.validation_errors</span></tt> returns.</p>
+<p><strong>handle_form</strong>: It receives 2 arguments (<em>name</em> and <em>age</em>) that are validated
 through the <em>SampleForm</em> schema class.</p>
+<p>The <tt class="docutils literal"><span class="pre">error_handler</span></tt> has been set to index, this means that when errors are raised
+they will be sent to the index controller so it returns them to the template.</p>
+<p><strong>error</strong>: Finally, we have the error controller that allows you application to
+custom display any possible errors that you might want to display.</p>
+</div>
+<div class="section" id="application-interaction">
+<h2>Application Interaction<a class="headerlink" href="#application-interaction" title="Permalink to this headline">¶</a></h2>
+<p>If you still have your application running and you visit your browser, you should
+see a nice page with some information about Pecan and a form so you can play a bit
+with.</p>
+<p>This is very basic but it will give you the grounds necessary to build your application
+and understand some of the features the framework packs.</p>
 </div>
 </div>
 
@@ -252,9 +322,11 @@ through the <em>SampleForm</em> schema class.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Quick Start</a><ul>
+<li><a class="reference internal" href="#base-application-template">Base Application Template</a></li>
 <li><a class="reference internal" href="#running-the-application">Running the application</a></li>
 <li><a class="reference internal" href="#simple-configuration">Simple Configuration</a></li>
 <li><a class="reference internal" href="#root-controller">Root Controller</a></li>
+<li><a class="reference internal" href="#application-interaction">Application Interaction</a></li>
 </ul>
 </li>
 </ul>
