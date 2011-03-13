@@ -52,7 +52,15 @@
             
   <div class="section" id="routing">
 <span id="id1"></span><h1>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h1>
-<p>When a user requests a Pecan-powered page how does Pecan know which controller to use? Pecan uses a method known as Object-dispatch to map a HTTP request to a controller.  Obejct-dispatch begins by spliting the path into a list of components and then walking object path starting at the root controller.  Let&#8217;s look at a simple store application:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This portion of the documentation is still a work in progress.</p>
+</div>
+<p>When a user requests a Pecan-powered page how does Pecan know which
+controller to use? Pecan uses a method known as Object-dispatch to map a
+HTTP request to a controller. Obejct-dispatch begins by splitting the
+path into a list of components and then walking object path starting at
+the root controller. Let&#8217;s look at a simple store application:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
 
 <span class="k">class</span> <span class="nc">BooksController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -83,7 +91,13 @@
     <span class="n">catalog</span> <span class="o">=</span> <span class="n">CatalogController</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>A request for <tt class="docutils literal"><span class="pre">/catalog/books/bestsellers</span></tt> from the online store would begin by Pecan breaking the request up into <tt class="docutils literal"><span class="pre">catalog</span></tt>, <tt class="docutils literal"><span class="pre">books</span></tt>, and <tt class="docutils literal"><span class="pre">bestsellers</span></tt>.  Next, Pecan would then lookup <tt class="docutils literal"><span class="pre">catalog</span></tt> on the root controller.  Using the <tt class="docutils literal"><span class="pre">catalog</span></tt> object, Pecan would then lookup <tt class="docutils literal"><span class="pre">books</span></tt> followed by <tt class="docutils literal"><span class="pre">bestsellers</span></tt>.   What if the URL ends in a slash? Pecan will check for an <tt class="docutils literal"><span class="pre">index</span></tt> method on the current object.  In the example above, you may have noticed the <tt class="docutils literal"><span class="pre">expose</span></tt> decorator.</p>
+<p>A request for <tt class="docutils literal"><span class="pre">/catalog/books/bestsellers</span></tt> from the online store would
+begin by Pecan breaking the request up into <tt class="docutils literal"><span class="pre">catalog</span></tt>, <tt class="docutils literal"><span class="pre">books</span></tt>, and
+<tt class="docutils literal"><span class="pre">bestsellers</span></tt>. Next, Pecan would then lookup <tt class="docutils literal"><span class="pre">catalog</span></tt> on the root
+controller. Using the <tt class="docutils literal"><span class="pre">catalog</span></tt> object, Pecan would then lookup
+<tt class="docutils literal"><span class="pre">books</span></tt> followed by <tt class="docutils literal"><span class="pre">bestsellers</span></tt>. What if the URL ends in a slash?
+Pecan will check for an <tt class="docutils literal"><span class="pre">index</span></tt> method on the current object. In the
+example above, you may have noticed the <tt class="docutils literal"><span class="pre">expose</span></tt> decorator.</p>
 <div class="section" id="routing-algorithm">
 <h2>Routing Algorithm<a class="headerlink" href="#routing-algorithm" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -131,8 +145,8 @@ class RootController(object):
         return 'I cannot say hi in that language'</pre>
 </div>
 </div>
-<div class="section" id="route">
-<h2><tt class="docutils literal"><span class="pre">_route</span></tt><a class="headerlink" href="#route" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overriding-route">
+<h2>Overriding <tt class="docutils literal"><span class="pre">_route</span></tt><a class="headerlink" href="#overriding-route" title="Permalink to this headline">¶</a></h2>
 <p>Example</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pecan</span> <span class="kn">import</span> <span class="n">expose</span>
 </pre></div>
@@ -187,10 +201,11 @@ class RootController(object):
 <p>redirect
 abort</p>
 </div>
-</div>
 <div class="section" id="expose">
-<h1><tt class="docutils literal"><span class="pre">&#64;expose</span></tt><a class="headerlink" href="#expose" title="Permalink to this headline">¶</a></h1>
-<p>At its core, <tt class="docutils literal"><span class="pre">expose</span></tt> is how you tell Pecan which methods in a class are controllers.  <tt class="docutils literal"><span class="pre">expose</span></tt> accepts eight optional parameters some of which can impact routing.</p>
+<h2><tt class="docutils literal"><span class="pre">&#64;expose</span></tt><a class="headerlink" href="#expose" title="Permalink to this headline">¶</a></h2>
+<p>At its core, <tt class="docutils literal"><span class="pre">expose</span></tt> is how you tell Pecan which methods in a class
+are controllers. <tt class="docutils literal"><span class="pre">expose</span></tt> accepts eight optional parameters some of
+which can impact routing.</p>
 <div class="highlight-python"><pre>def expose(template    = None,
        content_type    = 'text/html',
        schema          = None,
@@ -211,7 +226,14 @@ abort</p>
         <span class="k">return</span> <span class="p">{</span><span class="s">&#39;msg&#39;</span><span class="p">:</span> <span class="s">&#39;Hello!&#39;</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>You&#8217;ll notice that we used three expose decorators.  The first tells Pecan to serialize <tt class="docutils literal"><span class="pre">dict</span></tt> using JSON serialization when the client requests <tt class="docutils literal"><span class="pre">/hello.json</span></tt>.  The second tells the templating engine to use <tt class="docutils literal"><span class="pre">text_template.mako</span></tt> when the client request <tt class="docutils literal"><span class="pre">/hello.txt</span></tt>.  The third tells Pecan to use the html_template.mako when the client requests <tt class="docutils literal"><span class="pre">/hello.html</span></tt>. If the client requests <tt class="docutils literal"><span class="pre">/hello</span></tt>, Pecan will use the text/html template.</p>
+<p>You&#8217;ll notice that we used three expose decorators. The first tells
+Pecan to serialize <tt class="docutils literal"><span class="pre">dict</span></tt> using JSON serialization when the client
+requests <tt class="docutils literal"><span class="pre">/hello.json</span></tt>. The second tells the templating engine to use
+<tt class="docutils literal"><span class="pre">text_template.mako</span></tt> when the client request <tt class="docutils literal"><span class="pre">/hello.txt</span></tt>. The third
+tells Pecan to use the html_template.mako when the client requests
+<tt class="docutils literal"><span class="pre">/hello.html</span></tt>. If the client requests <tt class="docutils literal"><span class="pre">/hello</span></tt>, Pecan will use the
+text/html template.</p>
+</div>
 <div class="section" id="advanced-routing">
 <h2>Advanced Routing<a class="headerlink" href="#advanced-routing" title="Permalink to this headline">¶</a></h2>
 <p>Hooks
@@ -232,13 +254,11 @@ REST Controller</p>
 <li><a class="reference internal" href="#routing-algorithm">Routing Algorithm</a></li>
 <li><a class="reference internal" href="#lookup"><tt class="docutils literal"><span class="pre">_lookup</span></tt></a></li>
 <li><a class="reference internal" href="#default"><tt class="docutils literal"><span class="pre">_default</span></tt></a></li>
-<li><a class="reference internal" href="#route"><tt class="docutils literal"><span class="pre">_route</span></tt></a></li>
+<li><a class="reference internal" href="#overriding-route">Overriding <tt class="docutils literal"><span class="pre">_route</span></tt></a></li>
 <li><a class="reference internal" href="#controller-args">Controller Args</a></li>
 <li><a class="reference internal" href="#generic-functions">Generic Functions</a></li>
 <li><a class="reference internal" href="#helper-functions">Helper Functions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#expose"><tt class="docutils literal"><span class="pre">&#64;expose</span></tt></a><ul>
+<li><a class="reference internal" href="#expose"><tt class="docutils literal"><span class="pre">&#64;expose</span></tt></a></li>
 <li><a class="reference internal" href="#advanced-routing">Advanced Routing</a></li>
 </ul>
 </li>
