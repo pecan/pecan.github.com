@@ -6,6 +6,7 @@ body {
 	text-align: center;
 	margin: 0;
 	padding: 0;
+  padding-bottom: 2em;
 }
 
 a {
@@ -14,7 +15,7 @@ a {
 
 /* navigation */
 nav {
-	font-size:24px;
+	font-size:22px;
 	margin-bottom:36px;
 }
 nav a {
@@ -30,11 +31,18 @@ nav li {
 }
 
 /* main content */
+header img  {
+  margin-top: 2em;
+}
 section#main {
   line-height: 1.5em;
   width: 800px;
   margin: auto;
   text-align: left;
+}
+section#main .screenshot  {
+  position: relative;
+  right: 50px;
 }
 
 /* footer */
