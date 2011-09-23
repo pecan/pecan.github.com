@@ -3,12 +3,12 @@
 
 /* @group Boilerplate Overrides
 ----------------------------------------------- */
-a, a:active, a:visited { color: #607890; }
-a:hover { color: #036; }
+a, a:active, a:visited { color: #b17c0a; }
+a:hover { color: #b17c0a; }
 
-::-moz-selection{ background: #FF5E99; color:#fff; text-shadow: none; }
-::selection { background:#FF5E99; color:#fff; text-shadow: none; }
-a:link { -webkit-tap-highlight-color: #fE57A1; }
+::-moz-selection{ background: #C5996E; color:#fff; text-shadow: none; }
+::selection { background:#C5996E; color:#fff; text-shadow: none; }
+a:link { -webkit-tap-highlight-color: #C5996E; }
 
 /* @end */
 
@@ -92,15 +92,28 @@ nav li {
 header img  {
   margin-top: 2em;
 }
+
+p.big {
+	font-family: museo,serif;
+	font-size: 24px;
+	line-height: 1.4em;
+}
+
 section#main {
   line-height: 1.5em;
   width: 800px;
   margin: auto;
   text-align: left;
 }
+section#main p {
+	width: 720px;
+	padding: 0 40px;
+}
+
 section#main .screenshot  {
-  position: relative;
-  right: 50px;
+	text-align: center;
+	width:auto;
+	padding: 0;
 }
 
 /* footer */
