@@ -13,13 +13,13 @@ a:link { -webkit-tap-highlight-color: #C5996E; }
 /* @group Page */
 
 body {
-	font-family: Helvetica, Arial, Verdana, sans-serif;
+  border-top: 15px solid #261800;
+	font-family: "Lucida Grande", Arial, Verdana, sans-serif;
 	background: #2c1e00;
 	color: white;
 	text-align: center;
 	margin: 0;
 	padding: 0;
-	padding-bottom: 2em;
 }
 
 a {
@@ -27,17 +27,16 @@ a {
 }
 
 nav {
-	font-size:22px;
+	font-size:18px;
 	margin-bottom:36px;
 }
 
 nav a {
 	color: #b17c0a;
-	text-decoration:none;
 }
 
-nav a:hover {
-	text-decoration:underline;
+a:hover {
+  color: #f1ac4a;
 }
 
 nav li {
@@ -45,14 +44,19 @@ nav li {
 	margin:0 14px;
 }
 
+header  {
+  background: #332405;
+  padding-bottom: .25em;
+}
+
 header img  {
 	margin-top: 2em;
 }
 
 p.big {
-	font-family: museo,serif;
-	font-size: 22px;
-	line-height: 1.4em;
+	font-size: 16px;
+  text-align: justify;
+	line-height: 1.8em;
 }
 
 section#main {
@@ -60,11 +64,16 @@ section#main {
 	width: 800px;
 	margin: auto;
 	text-align: left;
+  padding-top: 1em;
 }
 
 section#main p {
 	width: 720px;
 	padding: 0 40px;
+}
+
+section ul {
+  margin: 2em;
 }
 
 section ul li {
@@ -81,11 +90,11 @@ section#main .screenshot  {
 }
 
 .notice {
-	padding: 1em;
-	background-color: #3A2A0B;
-	border: 3px solid #1D1405;
-	margin: 1em 40px;
-	font-size: 18px
+  margin-top: 2em;
+  padding: 1.5em;
+	background: #2c1e00;
+  background: #332405;
+	font-size: 18px;
 }
 
 .notice p {
@@ -94,7 +103,6 @@ section#main .screenshot  {
 	margin: 0;
 	text-align: center;
 	font-style: italic;
-	font-family: museo,serif;
 }
 
 .notice p a {
